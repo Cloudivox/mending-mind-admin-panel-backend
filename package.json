@@ -1,10 +1,9 @@
 {
   "name": "mending-mind-admin-panel-backend",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
-  "main": "index.js",
-  "scripts": {
+  "main": "index.ts",
+  "scripts": { 
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon"
   },
@@ -25,7 +24,17 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.13.0",
-    "mongoose": "^8.10.0",
-    "nodemon": "^3.1.9"
+    "mongoose": "^8.10.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/mongoose": "^5.11.97",
+    "@types/node": "^22.13.1",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   }
 }
