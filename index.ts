@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { createServer } from "http";
 import connectDB from "./src/config/db";
+import userRoutes from "./src/routes/user";
 dotenv.config();
 
 const app = express();
@@ -14,11 +15,11 @@ app.use(cors());
 
 const httpServer = createServer(app);
 
-
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
+app.use("/auth-service/v1/auth", userRoutes);
 
 // 404 Error Handling Middleware
 app.use((req, res, next) => {
@@ -26,12 +27,19 @@ app.use((req, res, next) => {
 });
 
 // Centralized Error Handling Middleware
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.message);
-  res.status(500).json({ message: "Internal Server Error" });
-});
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(err.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+);
 
 connectDB();
 httpServer.listen(PORT, () =>
-    console.log(`Server running on http://localhost:${PORT}`)
+  console.log(`Server running on http://localhost:${PORT}`)
 );
