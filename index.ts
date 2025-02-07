@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { createServer } from "http";
 import connectDB from "./src/config/db";
 import userRoutes from "./src/routes/user";
+import profileRoutes from "./src/routes/profile";
 dotenv.config();
 
 const app = express();
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth-service/v1/auth", userRoutes);
+app.use("/auth-service/v1/profile", profileRoutes);
 
 // 404 Error Handling Middleware
 app.use((req, res, next) => {

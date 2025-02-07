@@ -17,9 +17,16 @@ interface ErrorResponse {
   };
 }
 
-const auth = async (req: AuthRequest, res: Response, next: NextFunction) => {
+const auth = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const token = typeof req.headers["accesstoken"] === 'string' ? req.headers["accesstoken"].split(" ")[1] : undefined;
+    const token =
+      typeof req.headers["accesstoken"] === "string"
+        ? req.headers["accesstoken"].split(" ")[1]
+        : undefined;
 
     if (!token) {
       const errorResponse: ErrorResponse = {
@@ -30,12 +37,13 @@ const auth = async (req: AuthRequest, res: Response, next: NextFunction) => {
           code: "EX-00103",
         },
       };
-      return res.status(405).json(errorResponse);
+      res.status(405).json(errorResponse);
+      return;
     }
 
     const decoded = jwt.verify(token, secret);
-    if (typeof decoded !== 'string' && 'id' in decoded) {
-      req.user_Id = decoded.id; // Attach user ID to request
+    if (typeof decoded !== "string" && "id" in decoded) {
+      req.user_Id = decoded.id;
     }
     next();
   } catch (error) {
