@@ -56,8 +56,12 @@ export const signin = async (req: Request, res: Response) => {
     res.status(200).json({
       Status: "success",
       Data: {
-        user: existingUser,
-        token,
+        user: {
+          email: existingUser.email,
+          id: existingUser._id,
+          role: existingUser.role,
+          token,
+        },
       },
     });
   } catch (error) {
@@ -170,8 +174,12 @@ export const signup = async (req: Request, res: Response) => {
     res.status(201).json({
       Status: "success",
       Data: {
-        user: updatedUser,
-        token,
+        user: {
+          email: updatedUser.email,
+          id: updatedUser._id,
+          role: updatedUser.role,
+          token,
+        },
       },
     });
   } catch (error) {
@@ -199,7 +207,13 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
     }
     res.status(200).json({
       Status: "success",
-      Data: user,
+      Data: {
+        user: {
+          email: user.email,
+          id: user._id,
+          role: user.role,
+        },
+      },
     });
   } catch (error) {
     res.status(500).json({
