@@ -4,7 +4,7 @@ import { JwtPayload } from "jsonwebtoken";
 
 const secret = "mending-mind-admin-panel";
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user_Id?: string | JwtPayload;
 }
 

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import User from "../models/User";
+import { AuthRequest } from "../middleware/auth";
 
 const secret = "mending-mind-admin-panel";
 
@@ -172,6 +173,33 @@ export const signup = async (req: Request, res: Response) => {
         user: updatedUser,
         token,
       },
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const getUserDetails = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await User.findById(req.user_Id);
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+    res.status(200).json({
+      Status: "success",
+      Data: user,
     });
   } catch (error) {
     res.status(500).json({
