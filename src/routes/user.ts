@@ -4,6 +4,9 @@ import {
   createUser,
   signup,
   getUserDetails,
+  getAllUsers,
+  updateUser,
+  deleteUser,
 } from "../controllers/user";
 import auth from "../middleware/auth";
 const router = express.Router();
@@ -22,6 +25,18 @@ router.post("/signup", async (req: Request, res: Response) => {
 
 router.get("/get-user-details", auth, async (req: Request, res: Response) => {
   await getUserDetails(req, res);
+});
+
+router.get("/get-all-users", auth, async (req: Request, res: Response) => {
+  await getAllUsers(req, res);
+});
+
+router.put("/update-user", auth, async (req: Request, res: Response) => {
+  await updateUser(req, res);
+});
+
+router.delete("/delete-user", auth, async (req: Request, res: Response) => {
+  await deleteUser(req, res);
 });
 
 export default router;

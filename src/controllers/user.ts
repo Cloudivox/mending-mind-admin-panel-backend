@@ -225,3 +225,127 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await User.find({}, "email status name _id role"); // Fetch users with specific fields
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({
+        Status: "failure",
+        Error: {
+          message: "No users found.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        users,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  const { _id, email, role, name } = req.body;
+
+  if (!_id || !email || !role || !name) {
+    return res.status(400).json({
+      Status: "failure",
+      Error: {
+        message: "All fields (id, email, role, name) are required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return res.status(404).json({
+        Status: "failure",
+        Error: {
+          message: "User not found.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    // Update fields
+    user.email = email;
+    user.role = role;
+    user.name = name;
+
+    await user.save();
+
+    res.status(200).json({
+      Status: "success",
+      Data: user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+
+  if (!_id) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "User ID is required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const user = await User.findById(_id);
+
+    if (!user) {
+      return res.status(404).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    await user.deleteOne();
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        message: "User deleted successfully.",
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
