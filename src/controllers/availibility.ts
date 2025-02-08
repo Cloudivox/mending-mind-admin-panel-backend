@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import User from "../models/User";
 import Availibility from "../models/Availibility";
+import { AuthRequest } from "../middleware/auth";
 
-export const createAvailibility = async (req: Request, res: Response) => {
-  const { userId, date, startTime, endTime, type } = req.body;
+export const createAvailibility = async (req: AuthRequest, res: Response) => {
+  const { date, startTime, endTime, type } = req.body;
+  const userId = req.user_Id;
 
   if (!userId || !date || !startTime || !endTime || !type) {
     return res.status(403).json({
@@ -42,7 +44,9 @@ export const createAvailibility = async (req: Request, res: Response) => {
 
     res.status(200).json({
       Status: "success",
-      Data: newAvailibility,
+      Data: {
+        availibility: newAvailibility,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -55,8 +59,19 @@ export const createAvailibility = async (req: Request, res: Response) => {
   }
 };
 
-export const getAvailibility = async (req: Request, res: Response) => {
-  const { userId } = req.params;
+export const getAvailibility = async (req: AuthRequest, res: Response) => {
+  const userId = req.user_Id;
+  const { date } = req.params;
+
+  if (!date) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "Date is required.",
+        name: "ValidationError",
+      },
+    });
+  }
 
   try {
     const user = await User.findById(userId);
@@ -92,20 +107,115 @@ export const getAvailibility = async (req: Request, res: Response) => {
     }
 
     if (user.role === "admin") {
-      const availibility = await Availibility.find();
+      const availibility = await Availibility.find({ date });
 
       res.status(200).json({
         Status: "success",
         Data: availibility,
       });
     } else if (user.role === "therapist") {
-      const availibility = await Availibility.find({ userId });
+      const availibility = await Availibility.find({
+        userId,
+        date,
+      });
 
       res.status(200).json({
         Status: "success",
         Data: availibility,
       });
     }
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const updateTime = async (req: Request, res: Response) => {
+  const { availibilityId, startTime, endTime, type } = req.body;
+
+  if (!availibilityId || !startTime || !endTime || !type) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "All fields are required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const availibility = await Availibility.findById(availibilityId);
+
+    if (!availibility) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Availibility does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    availibility.startTime = startTime;
+    availibility.endTime = endTime;
+    availibility.type = type;
+
+    await availibility.save();
+
+    res.status(200).json({
+      Status: "success",
+      Data: availibility,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const deleteAvailibility = async (req: Request, res: Response) => {
+  const { availibilityId } = req.body;
+
+  if (!availibilityId) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "Availibility ID is required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const availibility = await Availibility.findById(availibilityId);
+
+    if (!availibility) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Availibility does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    await availibility.deleteOne();
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        message: "Availibility deleted successfully.",
+      },
+    });
   } catch (error) {
     res.status(500).json({
       Status: "failure",
