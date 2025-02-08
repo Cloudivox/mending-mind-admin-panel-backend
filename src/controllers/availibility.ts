@@ -61,7 +61,8 @@ export const createAvailibility = async (req: AuthRequest, res: Response) => {
 
 export const getAvailibility = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
-  const { date } = req.params;
+  // Extract date from query parameters instead of route parameters
+  const date = req.query.date as string; // typecast if needed
 
   if (!date) {
     return res.status(403).json({
@@ -111,7 +112,10 @@ export const getAvailibility = async (req: AuthRequest, res: Response) => {
 
       res.status(200).json({
         Status: "success",
-        Data: availibility,
+        Data: {
+          availibility,
+          count: availibility.length,
+        },
       });
     } else if (user.role === "therapist") {
       const availibility = await Availibility.find({
@@ -121,7 +125,10 @@ export const getAvailibility = async (req: AuthRequest, res: Response) => {
 
       res.status(200).json({
         Status: "success",
-        Data: availibility,
+        Data: {
+          availibility,
+          count: availibility.length,
+        },
       });
     }
   } catch (error) {
@@ -134,7 +141,6 @@ export const getAvailibility = async (req: AuthRequest, res: Response) => {
     });
   }
 };
-
 export const updateTime = async (req: Request, res: Response) => {
   const { availibilityId, startTime, endTime, type } = req.body;
 

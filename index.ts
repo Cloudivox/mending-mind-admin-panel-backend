@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth-service/v1/auth", userRoutes);
 app.use("/auth-service/v1/profile", profileRoutes);
-app.use("availability-service/v1/availability", availabilityRoutes);
+app.use("/availability-service/v1/availability", availabilityRoutes);
 
 // 404 Error Handling Middleware
 app.use((req, res, next) => {

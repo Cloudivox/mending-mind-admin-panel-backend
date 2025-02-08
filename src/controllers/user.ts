@@ -349,3 +349,38 @@ export const deleteUser = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getAllTherapist = async (req: AuthRequest, res: Response) => {
+  const userId = req.user_Id;
+  try {
+    const isAdmin = await User.findById(userId);
+    if (!isAdmin) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Only admin can get all therapists.",
+          name: "ValidationError",
+        },
+      });
+    }
+    const therapists = await User.find(
+      { role: "therapist", status: "active" },
+      "email name id"
+    );
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        therapists,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
