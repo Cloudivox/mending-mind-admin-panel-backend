@@ -214,6 +214,16 @@ export const deleteAvailibility = async (req: Request, res: Response) => {
       });
     }
 
+    if (availibility.clientId && availibility.status === "booked") {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Availibility is booked. You can reschedule it.",
+          name: "ValidationError",
+        },
+      });
+    }
+
     await availibility.deleteOne();
 
     res.status(200).json({
