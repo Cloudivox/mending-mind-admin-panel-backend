@@ -8,6 +8,7 @@ import {
   updateUser,
   deleteUser,
   getAllTherapist,
+  searchUser,
 } from "../controllers/user";
 import auth from "../middleware/auth";
 const router = express.Router();
@@ -42,6 +43,10 @@ router.delete("/delete-user", auth, async (req: Request, res: Response) => {
 
 router.get("/get-all-therapists", auth, async (req: Request, res: Response) => {
   await getAllTherapist(req, res);
+});
+
+router.get("/search-user", async (req: Request, res: Response) => {
+  await searchUser(req, res);
 });
 
 export default router;

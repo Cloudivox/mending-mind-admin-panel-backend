@@ -350,6 +350,51 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+export const searchUser = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || typeof query !== "string") {
+      return res.status(400).json({
+        Status: "failure",
+        Error: {
+          message: "Search query is required.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    const regex = new RegExp(query, "i"); // Case-insensitive partial search
+
+    const users = await User.find(
+      {
+        $or: [
+          { name: regex },
+          { email: regex },
+          { role: regex },
+          { status: regex },
+        ],
+      },
+      "email status name _id role"
+    );
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        users,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
 export const getAllTherapist = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
   try {
@@ -367,7 +412,7 @@ export const getAllTherapist = async (req: AuthRequest, res: Response) => {
       { role: "therapist", status: "active" },
       "email name id"
     );
-
+ 
     res.status(200).json({
       Status: "success",
       Data: {
