@@ -228,14 +228,45 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.find({}, "email status name _id role"); // Fetch users with specific fields
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string) || "";
+
+    // Calculate skip for pagination
+    const skip = (page - 1) * limit;
+
+    // Create search query
+    const searchQuery = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { role: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // Get total count for pagination
+    const totalUsers = await User.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    // Fetch paginated and filtered users
+    const users = await User.find(searchQuery, "email status name _id role")
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
     if (!users || users.length === 0) {
-      return res.status(404).json({
-        Status: "failure",
-        Error: {
-          message: "No users found.",
-          name: "NotFoundError",
+      return res.status(200).json({
+        Status: "success",
+        Data: {
+          users: [],
+          pagination: {
+            totalUsers: 0,
+            totalPages: 0,
+            currentPage: page,
+            limit,
+          },
         },
       });
     }
@@ -244,6 +275,12 @@ export const getAllUsers = async (req: Request, res: Response) => {
       Status: "success",
       Data: {
         users,
+        pagination: {
+          totalUsers,
+          totalPages,
+          currentPage: page,
+          limit,
+        },
       },
     });
   } catch (error) {
@@ -350,51 +387,6 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-export const searchUser = async (req: Request, res: Response) => {
-  try {
-    const { query } = req.query;
-
-    if (!query || typeof query !== "string") {
-      return res.status(400).json({
-        Status: "failure",
-        Error: {
-          message: "Search query is required.",
-          name: "ValidationError",
-        },
-      });
-    }
-
-    const regex = new RegExp(query, "i"); // Case-insensitive partial search
-
-    const users = await User.find(
-      {
-        $or: [
-          { name: regex },
-          { email: regex },
-          { role: regex },
-          { status: regex },
-        ],
-      },
-      "email status name _id role"
-    );
-
-    res.status(200).json({
-      Status: "success",
-      Data: {
-        users,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      Status: "failure",
-      Error: {
-        message: "Internal Server Error.",
-        name: "ServerError",
-      },
-    });
-  }
-};
-
 export const getAllTherapist = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
   try {
@@ -412,7 +404,7 @@ export const getAllTherapist = async (req: AuthRequest, res: Response) => {
       { role: "therapist", status: "active" },
       "email name id"
     );
- 
+
     res.status(200).json({
       Status: "success",
       Data: {
