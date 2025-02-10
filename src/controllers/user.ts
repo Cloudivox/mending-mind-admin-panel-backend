@@ -77,7 +77,7 @@ export const signin = async (req: Request, res: Response) => {
 
 // **Create User**
 export const createUser = async (req: Request, res: Response) => {
-  const { email, role, name } = req.body;
+  const { email, role, name, phone } = req.body;
 
   if (!email || !role || !name) {
     return res.status(403).json({
@@ -102,7 +102,13 @@ export const createUser = async (req: Request, res: Response) => {
       });
     }
 
-    const newUser = new User({ email, role, status: "pending", name });
+    const newUser = new User({
+      email,
+      role,
+      status: "pending",
+      name,
+      phone: phone ? phone : null,
+    });
     await newUser.save();
 
     res.status(201).json({
@@ -295,7 +301,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  const { _id, email, role, name } = req.body;
+  const { _id, email, role, name, phone } = req.body;
 
   if (!_id || !email || !role || !name) {
     return res.status(400).json({
@@ -324,6 +330,7 @@ export const updateUser = async (req: Request, res: Response) => {
     user.email = email;
     user.role = role;
     user.name = name;
+    user.phone = phone ? phone : null;
 
     await user.save();
 

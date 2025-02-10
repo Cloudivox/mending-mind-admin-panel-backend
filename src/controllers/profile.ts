@@ -28,9 +28,10 @@ export const updateProfile = async (req: Request, res: Response) => {
     }
 
     if (name || email) {
-      if (name !== user.name || email !== user.email) {
+      if (name !== user.name || email !== user.email || phone !== user.phone) {
         user.name = name;
         user.email = email;
+        user.phone = phone;
         await user.save();
       }
     }
@@ -43,7 +44,6 @@ export const updateProfile = async (req: Request, res: Response) => {
         qualification,
         specialization,
         experience,
-        phone,
         userId,
       });
       await newProfile.save();
@@ -52,7 +52,6 @@ export const updateProfile = async (req: Request, res: Response) => {
       profile.qualification = qualification;
       profile.specialization = specialization;
       profile.experience = experience;
-      profile.phone = phone;
       await profile.save();
     }
 
