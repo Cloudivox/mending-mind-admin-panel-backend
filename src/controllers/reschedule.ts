@@ -240,24 +240,67 @@ export const rejectReschedule = async (req: AuthRequest, res: Response) => {
 
 export const getAllReschedules = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
+
   try {
-    const reschedules = await Reschedule.find({ userId });
-    if (!reschedules) {
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(403).json({
         Status: "failure",
         Error: {
-          message: "Reschedules not found.",
+          message: "User does not exist.",
           name: "ValidationError",
         },
       });
     }
+
+    let reschedules;
+
+    if (user.role === "admin") {
+      // Find pending reschedules and populate therapist name
+      reschedules = await Reschedule.find({ status: "pending" })
+        .sort({ date: -1, startTime: -1 })
+        .populate("userId", "name"); // Fetch only the name of the therapist
+    } else if (user.role === "therapist") {
+      // Find reschedules for the therapist
+      reschedules = await Reschedule.find({ userId })
+        .sort({ date: -1, startTime: -1 });
+    } else {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Unauthorized access.",
+          name: "AuthorizationError",
+        },
+      });
+    }
+
+    if (!reschedules || reschedules.length === 0) {
+      return res.status(200).json({
+        Status: "success",
+        Data: {
+          reschedules: [],
+          count: 0,
+        },
+      });
+    }
+
+    // If admin, attach therapist_name to each reschedule
+    const formattedReschedules = reschedules.map((reschedule) => ({
+      ...reschedule.toObject(),
+      therapist_name: user.role === "admin" && reschedule.userId
+        ? (reschedule.userId as any).name
+        : undefined,
+    }));
+
     res.status(200).json({
       Status: "success",
       Data: {
-        reschedules,
+        reschedules: formattedReschedules,
+        count: formattedReschedules.length,
       },
     });
   } catch (error) {
+    console.error("Error fetching reschedules:", error);
     res.status(500).json({
       Status: "failure",
       Error: {

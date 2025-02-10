@@ -50,7 +50,7 @@ export const signin = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { email: existingUser.email, id: existingUser._id },
       secret,
-      { expiresIn: "8h" }
+      { expiresIn: 8 * 60 * 60 }
     );
 
     res.status(200).json({
@@ -174,7 +174,7 @@ export const signup = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { email: updatedUser.email, id: updatedUser._id },
       secret,
-      { expiresIn: "8h" }
+      { expiresIn: 8 * 60 * 60 }
     );
 
     res.status(201).json({

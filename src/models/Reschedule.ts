@@ -25,7 +25,7 @@ const RescheduleSchema = new Schema<IReschedule>({
     required: true,
     enum: ["pending", "approved", "rejected"],
   },
-  clientId: { type: String, required: false },
+  clientId: { type: String, required: true },
 });
 
 export default mongoose.model("Reschedule", RescheduleSchema);

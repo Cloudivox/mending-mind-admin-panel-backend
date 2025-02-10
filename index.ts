@@ -6,6 +6,7 @@ import connectDB from "./src/config/db";
 import userRoutes from "./src/routes/user";
 import profileRoutes from "./src/routes/profile";
 import availabilityRoutes from "./src/routes/availibility";
+import rescheduleRoutes from "./src/routes/reschedule";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/auth-service/v1/auth", userRoutes);
 app.use("/auth-service/v1/profile", profileRoutes);
 app.use("/availability-service/v1/availability", availabilityRoutes);
+app.use("reschedule-session-service/v1/reschedule", rescheduleRoutes);
 
 // 404 Error Handling Middleware
 app.use((req, res, next) => {
