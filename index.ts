@@ -7,6 +7,7 @@ import userRoutes from "./src/routes/user";
 import profileRoutes from "./src/routes/profile";
 import availabilityRoutes from "./src/routes/availibility";
 import rescheduleRoutes from "./src/routes/reschedule";
+import blogRoutes from "./src/routes/blog";
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/auth-service/v1/auth", userRoutes);
 app.use("/auth-service/v1/profile", profileRoutes);
 app.use("/availability-service/v1/availability", availabilityRoutes);
 app.use("reschedule-session-service/v1/reschedule", rescheduleRoutes);
+app.use("/blog-service/v1/blog", blogRoutes);
 
 // 404 Error Handling Middleware
 app.use((req, res, next) => {
