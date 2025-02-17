@@ -6,7 +6,6 @@ export interface IProfile extends Document {
   qualification: string;
   specialization: string;
   experience: string;
-  phone: string;
 }
 
 const ProfileSchema = new Schema<IProfile>({
@@ -15,7 +14,6 @@ const ProfileSchema = new Schema<IProfile>({
   qualification: { type: String, required: true },
   specialization: { type: String, required: true },
   experience: { type: String, required: true },
-  phone: { type: String, required: true },
 });
 
 export default mongoose.model("Profile", ProfileSchema);
