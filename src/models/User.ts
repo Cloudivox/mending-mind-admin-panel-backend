@@ -4,20 +4,20 @@ export interface IUser extends Document {
   email: string;
   name: string;
   password: string;
-  id: string;
   status: string;
   role: string;
   phone: string;
+  age:string;
 }
 
 const UserSchema = new Schema<IUser>({
   email: { type: String, required: true },
   name: { type: String, required: true },
   password: { type: String },
-  id: { type: String },
   status: { type: String },
   role: { type: String, enum: ["admin", "therapist", "part-time", "client"] },
   phone: { type: String },
+  age : { type:String },
 });
 
 export default mongoose.model("User", UserSchema);

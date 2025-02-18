@@ -3,6 +3,9 @@ import auth from "../middleware/auth";
 import {
   createPackage,
   getAllSessionPackages,
+  getSessionPackageDetailsById,
+  approveSessionPackage,
+  rejectSessionPackage
 } from "../controllers/session-package";
 
 const router = express.Router();
@@ -22,5 +25,17 @@ router.get(
     await getAllSessionPackages(req, res);
   }
 );
+
+router.get("/session-package/:packageId", auth, async (req: Request, res: Response) => {
+  await getSessionPackageDetailsById(req, res);
+});
+
+router.put("/approve-session-package/:packageId", auth, async (req: Request, res: Response) => {
+  await approveSessionPackage(req, res);
+});
+
+router.put("/reject-session-package/:packageId", auth, async (req: Request, res: Response) => {
+  await rejectSessionPackage(req, res);
+});
 
 export default router;
