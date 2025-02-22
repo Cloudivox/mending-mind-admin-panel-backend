@@ -5,6 +5,7 @@ import {
   deleteAvailibility,
   getAvailibility,
   updateTime,
+  getAvailibilityByUserIdAndDate
 } from "../controllers/availibility";
 
 const router = express.Router();
@@ -37,4 +38,11 @@ router.delete(
   }
 );
 
+router.get(
+  "/:userId",
+  auth,
+  async (req: Request, res: Response) => {
+    await getAvailibilityByUserIdAndDate(req, res);
+  }
+)
 export default router;

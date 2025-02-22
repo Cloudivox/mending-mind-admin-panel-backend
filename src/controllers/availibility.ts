@@ -242,3 +242,76 @@ export const deleteAvailibility = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+export const getAvailibilityByUserIdAndDate = async (req: AuthRequest, res: Response) => {
+  const { userId } = req.params;
+  const date = req.query.date as string;
+
+  if (!date) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "Date is required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    if (user.role !== "therapist" && user.role !== "admin") {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User is not a therapist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    if (user.status !== "active") {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User is not active.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    const availibility = await Availibility.find({
+      userId,
+      date,
+      status: "available"
+    });
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        availibility,
+        count: availibility.length,
+      },
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};

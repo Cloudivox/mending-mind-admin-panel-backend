@@ -237,20 +237,35 @@ export const getAllUsers = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const search = (req.query.search as string) || "";
+    const type = (req.query.role as string) || "";
 
     // Calculate skip for pagination
     const skip = (page - 1) * limit;
 
-    // Create search query
-    const searchQuery = search
-      ? {
-          $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-            { role: { $regex: search, $options: "i" } },
-          ],
-        }
-      : {};
+    // Build query filters
+    const queries = [];
+    
+    // If search is provided, add search query for name, email, and role
+    if (search) {
+      queries.push({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { role: { $regex: search, $options: "i" } },
+        ],
+      });
+    }
+    
+    // If type is provided, split by comma and trim spaces, then add a filter on role
+    if (type) {
+      const roles = type.split(",").map((role: string) => role.trim());
+      queries.push({
+        role: { $in: roles },
+      });
+    }
+    
+    // Combine queries if any filters are applied
+    const searchQuery = queries.length ? { $and: queries } : {};
 
     // Get total count for pagination
     const totalUsers = await User.countDocuments(searchQuery);
@@ -262,25 +277,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    if (!users || users.length === 0) {
-      return res.status(200).json({
-        Status: "success",
-        Data: {
-          users: [],
-          pagination: {
-            totalUsers: 0,
-            totalPages: 0,
-            currentPage: page,
-            limit,
-          },
-        },
-      });
-    }
-
     res.status(200).json({
       Status: "success",
       Data: {
-        users,
+        users: users || [],
         pagination: {
           totalUsers,
           totalPages,
@@ -299,6 +299,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 export const updateUser = async (req: Request, res: Response) => {
   const { _id, email, role, name, phone } = req.body;
