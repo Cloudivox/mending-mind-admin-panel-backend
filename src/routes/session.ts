@@ -21,7 +21,7 @@ router.get(
     }
 );
 
-router.get("/session/:sessionId", auth, async (req: Request, res: Response) => {
+router.get("/:sessionId", auth, async (req: Request, res: Response) => {
     await getSessionById(req, res);
 });
 
