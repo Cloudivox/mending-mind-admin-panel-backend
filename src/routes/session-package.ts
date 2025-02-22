@@ -26,7 +26,7 @@ router.get(
   }
 );
 
-router.get("/session-package/:packageId", auth, async (req: Request, res: Response) => {
+router.get("/:packageId", auth, async (req: Request, res: Response) => {
   await getSessionPackageDetailsById(req, res);
 });
 

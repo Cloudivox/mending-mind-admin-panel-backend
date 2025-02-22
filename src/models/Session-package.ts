@@ -11,6 +11,7 @@ export interface ISessionPackage extends Document {
   goals: string[];
   installmentStatus: string;
   date: string;
+  createdBy: string;
 }
 
 const SessionPackageSchema = new Schema<ISessionPackage>({
@@ -24,6 +25,7 @@ const SessionPackageSchema = new Schema<ISessionPackage>({
   goals: { type: [String], required: true },
   installmentStatus: { type: String, required: true },
   date: { type: String, required: true },
+  createdBy: { type: String, required: true }
 });
 
 export default mongoose.model("SessionPackage", SessionPackageSchema);
