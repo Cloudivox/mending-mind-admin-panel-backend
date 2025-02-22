@@ -217,7 +217,7 @@ export const getSessionPackageDetailsById = async (req: AuthRequest, res: Respon
         },
       });
     }
-    const userDetails = await User.findById(sessionPackage.clientId).select("name age");
+    const userDetails = await User.findById(sessionPackage.clientId).select("name age gender");
     const therapistDetails = await User.findById(sessionPackage.therapistId).select("name");
 
     if (!userDetails || !therapistDetails) {
@@ -243,6 +243,7 @@ export const getSessionPackageDetailsById = async (req: AuthRequest, res: Respon
         clientId: sessionPackage.clientId,
         clientName: userDetails.name,
         clientAge: userDetails.age,
+        clientGender: userDetails.gender,
         therapistName: therapistDetails.name,
       }
     });

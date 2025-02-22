@@ -8,6 +8,7 @@ export interface IUser extends Document {
   role: string;
   phone: string;
   age:string;
+  gender:string;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -18,6 +19,7 @@ const UserSchema = new Schema<IUser>({
   role: { type: String, enum: ["admin", "therapist", "part-time", "client"] },
   phone: { type: String },
   age : { type:String },
+  gender: {type: String}
 });
 
 export default mongoose.model("User", UserSchema);

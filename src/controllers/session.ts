@@ -199,7 +199,7 @@ export const getSessionById = async (req: AuthRequest, res: Response) => {
             });
         }
 
-        const client = await User.findById(session.clientId).select("name email phone");
+        const client = await User.findById(session.clientId).select("name email phone age gender");
         const therapist = await User.findById(session.therapistId).select("name");
 
         if (!client || !therapist) {
@@ -219,6 +219,8 @@ export const getSessionById = async (req: AuthRequest, res: Response) => {
                 clientName: client.name,
                 clientEmail: client.email,
                 clientPhone: client.phone,
+                clientAge: client.age,
+                clientGender:client.gender,
                 therapistName: therapist.name,
             },
         });
