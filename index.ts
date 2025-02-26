@@ -10,6 +10,7 @@ import rescheduleRoutes from "./src/routes/reschedule";
 import blogRoutes from "./src/routes/blog";
 import sessionPackageRoutes from "./src/routes/session-package";
 import sessionRoutes from './src/routes/session';
+import organizationRoutes from './src/routes/organization';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use("reschedule-session-service/v1/reschedule", rescheduleRoutes);
 app.use("/blog-service/v1/blog", blogRoutes);
 app.use("/session-package-service/v1/session-package", sessionPackageRoutes);
 app.use("/session-service/v1/session", sessionRoutes);
+app.use("/organization-service/v1/organization", organizationRoutes);
 
 // 404 Error Handling Middleware
 app.use((req, res, next) => {

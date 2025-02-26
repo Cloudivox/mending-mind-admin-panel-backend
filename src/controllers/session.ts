@@ -70,6 +70,7 @@ export const createSession = async (req: AuthRequest, res: Response) => {
             Message: "Session created successfully",
         });
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             Status: "failure",
             Error: {
@@ -220,7 +221,7 @@ export const getSessionById = async (req: AuthRequest, res: Response) => {
                 clientEmail: client.email,
                 clientPhone: client.phone,
                 clientAge: client.age,
-                clientGender:client.gender,
+                clientGender: client.gender,
                 therapistName: therapist.name,
             },
         });
