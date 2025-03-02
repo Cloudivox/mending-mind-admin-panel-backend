@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
 import User from "../models/User";
+import Organization from "../models/Organization";
 import { AuthRequest } from "../middleware/auth";
 
 const secret = "mending-mind-admin-panel";
@@ -77,6 +78,7 @@ export const signin = async (req: Request, res: Response) => {
 
 // **Create User**
 export const createUser = async (req: Request, res: Response) => {
+  const { organizationId } = req.params;
   const { email, role, name, phone } = req.body;
 
   if (!email || !role || !name) {
@@ -90,6 +92,18 @@ export const createUser = async (req: Request, res: Response) => {
   }
 
   try {
+    const organization = await Organization.findById(organizationId);
+
+    if (!organization) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Organization does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -108,8 +122,13 @@ export const createUser = async (req: Request, res: Response) => {
       status: "pending",
       name,
       phone: phone ? phone : null,
-    });
-    await newUser.save();
+      ...(role === "client" && { organization: organizationId }),
+    }) as InstanceType<typeof User>;
+
+    if (role === "therapist") {
+      organization.therapists.push(String(newUser._id));
+      await organization.save();
+    }
 
     res.status(201).json({
       Status: "success",
@@ -233,6 +252,17 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
 };
 
 export const getAllUsers = async (req: Request, res: Response) => {
+  const organizationId = req.params.organizationId;
+  if (!organizationId) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "Organization Id is required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -242,10 +272,20 @@ export const getAllUsers = async (req: Request, res: Response) => {
     // Calculate skip for pagination
     const skip = (page - 1) * limit;
 
+    const organization = await Organization.findById(organizationId);
+    if (!organization) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Organization does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
     // Build query filters
-    const queries = [];
-    
-    // If search is provided, add search query for name, email, and role
+    const queries: any[] = [];
+
     if (search) {
       queries.push({
         $or: [
@@ -255,15 +295,18 @@ export const getAllUsers = async (req: Request, res: Response) => {
         ],
       });
     }
-    
-    // If type is provided, split by comma and trim spaces, then add a filter on role
+
     if (type) {
       const roles = type.split(",").map((role: string) => role.trim());
-      queries.push({
-        role: { $in: roles },
-      });
+
+      if (roles.includes("therapist")) {
+        // Filter users whose _id is in the organization's therapists array
+        queries.push({ _id: { $in: organization.therapists } });
+      } else {
+        queries.push({ role: { $in: roles } });
+      }
     }
-    
+
     // Combine queries if any filters are applied
     const searchQuery = queries.length ? { $and: queries } : {};
 
@@ -299,7 +342,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
     });
   }
 };
-
 
 export const updateUser = async (req: Request, res: Response) => {
   const { _id, email, role, name, phone } = req.body;

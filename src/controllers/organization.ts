@@ -33,7 +33,32 @@ export const getAllOrganizations = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    return res.status(200).json({ Status: "success", Data: organizations });
+    // Convert therapist IDs to objects with { id, name }
+    const organizationsWithTherapists = await Promise.all(
+      organizations.map(async (org) => {
+        // Fetch therapist details
+        const therapists = await User.find(
+          { _id: { $in: org.therapists } },
+          { _id: 1, name: 1 } // Explicitly select fields
+        ).lean();
+
+        // Format therapists array
+        const formattedTherapists = therapists.map((therapist) => ({
+          id: therapist._id.toString(),
+          name: therapist.name,
+        }));
+
+        return {
+          ...org.toObject(),
+          therapists: formattedTherapists,
+          users: 0,
+        };
+      })
+    );
+
+    return res
+      .status(200)
+      .json({ Status: "success", Data: organizationsWithTherapists });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
@@ -51,15 +76,7 @@ export const createOrganization = async (req: AuthRequest, res: Response) => {
   const { name, location, code, country, description, logo, therapists } =
     req.body;
 
-  if (
-    !name ||
-    !location ||
-    !code ||
-    !country ||
-    !description ||
-    !logo ||
-    !therapists
-  ) {
+  if (!name || !location || !code || !country || !therapists) {
     return res.status(400).json({
       Status: "failure",
       Error: {
@@ -107,7 +124,8 @@ export const createOrganization = async (req: AuthRequest, res: Response) => {
 
     return res.status(200).json({ Status: "success", Data: organization });
   } catch (error) {
-    res.status(500).json({
+    console.error(error);
+    return res.status(500).json({
       Status: "failure",
       Error: {
         message: "Internal server error.",

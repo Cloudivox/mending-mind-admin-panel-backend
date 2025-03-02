@@ -16,7 +16,7 @@ router.post("/signin", async (req: Request, res: Response) => {
   await signin(req, res);
 });
 
-router.post("/create", async (req: Request, res: Response) => {
+router.post("/create/:organizationId", async (req: Request, res: Response) => {
   await createUser(req, res);
 });
 
@@ -28,9 +28,13 @@ router.get("/get-user-details", auth, async (req: Request, res: Response) => {
   await getUserDetails(req, res);
 });
 
-router.get("/get-all-users", auth, async (req: Request, res: Response) => {
-  await getAllUsers(req, res);
-});
+router.get(
+  "/get-all-users/:organizationId",
+  auth,
+  async (req: Request, res: Response) => {
+    await getAllUsers(req, res);
+  }
+);
 
 router.put("/update-user", auth, async (req: Request, res: Response) => {
   await updateUser(req, res);
