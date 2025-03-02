@@ -62,6 +62,9 @@ export const signin = async (req: Request, res: Response) => {
           id: existingUser._id,
           role: existingUser.role,
           token,
+          ...(existingUser.role === "client" && {
+            organizationId: existingUser.organizationId,
+          }),
         },
       },
     });
