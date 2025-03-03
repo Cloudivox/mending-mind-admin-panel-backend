@@ -115,7 +115,11 @@ export const getAllNotes = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const notes = await SessionNotes.find({ sessionId });
+    const notes = await SessionNotes.find({ sessionId, isDeleted: false }).sort(
+      {
+        createdAt: -1,
+      }
+    );
 
     const authorIds = notes.map((note) => note.authorId);
     const authors = await User.find({ _id: { $in: authorIds } }).lean();
@@ -139,8 +143,8 @@ export const getAllNotes = async (req: AuthRequest, res: Response) => {
     }));
 
     return res.status(200).json({
-      status: "success",
-      data: formattedNotes,
+      Status: "success",
+      Data: formattedNotes,
     });
   } catch (error) {
     return res.status(500).json({
