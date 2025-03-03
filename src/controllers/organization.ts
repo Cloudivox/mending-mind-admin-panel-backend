@@ -140,6 +140,152 @@ export const createOrganization = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const updateOrganization = async (req: AuthRequest, res: Response) => {
+  const userId = req.user_Id;
+  const { id, name, location, code, country, description, logo, therapists } =
+    req.body;
+
+  if (!id) {
+    return res.status(400).json({
+      Status: "failure",
+      Error: {
+        message: "Organization ID is required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    if (user.role !== "admin") {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Only admin can update an organization.",
+          name: "AuthorizationError",
+        },
+      });
+    }
+
+    const organization = await Organization.findById(id);
+    if (!organization) {
+      return res.status(404).json({
+        Status: "failure",
+        Error: {
+          message: "Organization not found.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    const updatedFields = {
+      ...(name && { name }),
+      ...(location && { location }),
+      ...(code && { code }),
+      ...(country && { country }),
+      ...(description && { description }),
+      ...(logo && { logo }),
+      ...(therapists && { therapists }),
+      updatedAt: new Date().toISOString(),
+      updatedBy: userId,
+    };
+
+    const updatedOrganization = await Organization.findByIdAndUpdate(
+      id,
+      { $set: updatedFields },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json({ Status: "success", Data: updatedOrganization });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal server error.",
+        name: "InternalServerError",
+      },
+    });
+  }
+};
+
+export const deleteOrganization = async (req: AuthRequest, res: Response) => {
+  const userId = req.user_Id;
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({
+      Status: "failure",
+      Error: {
+        message: "Organization ID is required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    if (user.role !== "admin") {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Only admin can delete an organization.",
+          name: "AuthorizationError",
+        },
+      });
+    }
+
+    const organization = await Organization.findById(id);
+    if (!organization) {
+      return res.status(404).json({
+        Status: "failure",
+        Error: {
+          message: "Organization not found.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    await Organization.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      Status: "success",
+      Message: "Organization deleted successfully.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal server error.",
+        name: "InternalServerError",
+      },
+    });
+  }
+};
+
 export const verifyCode = async (req: AuthRequest, res: Response) => {
   const { code } = req.body;
   if (!code) {

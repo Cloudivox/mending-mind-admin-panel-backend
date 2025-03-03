@@ -2,8 +2,10 @@ import express, { Request, Response } from "express";
 import auth from "../middleware/auth";
 import {
   createOrganization,
+  deleteOrganization,
   getAllOrganizations,
   getDetailsByCode,
+  updateOrganization,
   verifyCode,
 } from "../controllers/organization";
 
@@ -14,6 +16,22 @@ router.post(
   auth,
   async (req: Request, res: Response) => {
     await createOrganization(req, res);
+  }
+);
+
+router.post(
+  "/update-organization",
+  auth,
+  async (req: Request, res: Response) => {
+    await updateOrganization(req, res);
+  }
+);
+
+router.delete(
+  "/delete-organization",
+  auth,
+  async (req: Request, res: Response) => {
+    await deleteOrganization(req, res);
   }
 );
 
