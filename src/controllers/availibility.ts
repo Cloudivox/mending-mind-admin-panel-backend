@@ -243,8 +243,10 @@ export const deleteAvailibility = async (req: Request, res: Response) => {
   }
 };
 
-
-export const getAvailibilityByUserIdAndDate = async (req: AuthRequest, res: Response) => {
+export const getAvailibilityByUserIdAndDate = async (
+  req: AuthRequest,
+  res: Response
+) => {
   const { userId } = req.params;
   const date = req.query.date as string;
 
@@ -294,7 +296,7 @@ export const getAvailibilityByUserIdAndDate = async (req: AuthRequest, res: Resp
     const availibility = await Availibility.find({
       userId,
       date,
-      status: "available"
+      status: "available",
     });
 
     res.status(200).json({
@@ -304,8 +306,8 @@ export const getAvailibilityByUserIdAndDate = async (req: AuthRequest, res: Resp
         count: availibility.length,
       },
     });
-
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       Status: "failure",
       Error: {

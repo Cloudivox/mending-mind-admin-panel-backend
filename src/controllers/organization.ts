@@ -49,7 +49,7 @@ export const getAllOrganizations = async (req: AuthRequest, res: Response) => {
 
         // Format therapists array
         const formattedTherapists = therapists.map((therapist) => ({
-          id: therapist._id.toString(),
+          _id: therapist._id.toString(),
           name: therapist.name,
         }));
 
