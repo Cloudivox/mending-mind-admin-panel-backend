@@ -39,8 +39,13 @@ export const getAllOrganizations = async (req: AuthRequest, res: Response) => {
         // Fetch therapist details
         const therapists = await User.find(
           { _id: { $in: org.therapists } },
-          { _id: 1, name: 1 } // Explicitly select fields
+          { _id: 1, name: 1 }
         ).lean();
+
+        const clientCount = await User.countDocuments({
+          organizationId: org.id,
+          role: "client",
+        });
 
         // Format therapists array
         const formattedTherapists = therapists.map((therapist) => ({
@@ -51,7 +56,7 @@ export const getAllOrganizations = async (req: AuthRequest, res: Response) => {
         return {
           ...org.toObject(),
           therapists: formattedTherapists,
-          users: 0,
+          users: clientCount,
         };
       })
     );
