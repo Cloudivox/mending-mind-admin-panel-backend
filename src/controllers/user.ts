@@ -531,7 +531,7 @@ export const clientRegistration = async (req: Request, res: Response) => {
       age,
       gender,
       role: "client",
-      organization: organizationId,
+      organizationId: organizationId,
       status: "active",
     });
 
