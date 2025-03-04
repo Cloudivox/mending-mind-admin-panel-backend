@@ -115,21 +115,23 @@ export const getAllSessions = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    if (user.role !== "admin" && user.role !== "therapist") {
-      return res.status(403).json({
-        Status: "failure",
-        Error: {
-          message: "Only admin and therapist can access it.",
-          name: "AuthorizationError",
-        },
-      });
-    }
+    // if (user.role !== "admin" && user.role !== "therapist") {
+    //   return res.status(403).json({
+    //     Status: "failure",
+    //     Error: {
+    //       message: "Only admin and therapist can access it.",
+    //       name: "AuthorizationError",
+    //     },
+    //   });
+    // }
 
     let sessions;
     if (user.role === "admin") {
       sessions = await Session.find({});
     } else if (user.role === "therapist") {
       sessions = await Session.find({ therapistId: userId });
+    } else if (user.role === "client") {
+      sessions = await Session.find({ clientId: userId });
     }
 
     if (!sessions || sessions.length === 0) {
@@ -216,15 +218,15 @@ export const getSessionById = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    if (user.role !== "admin" && user.role !== "therapist") {
-      return res.status(403).json({
-        Status: "failure",
-        Error: {
-          message: "Only admin and therapist can access it.",
-          name: "AuthorizationError",
-        },
-      });
-    }
+    // if (user.role !== "admin" && user.role !== "therapist") {
+    //   return res.status(403).json({
+    //     Status: "failure",
+    //     Error: {
+    //       message: "Only admin and therapist can access it.",
+    //       name: "AuthorizationError",
+    //     },
+    //   });
+    // }
 
     const session = await Session.findById(sessionId);
 
