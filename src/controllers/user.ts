@@ -483,3 +483,89 @@ export const getAllTherapist = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+export const clientRegistration = async (req: Request, res: Response) => {
+  const { organizationId } = req.params;
+  const { name, email, phone, password, age, gender } = req.body;
+
+  if (!name || !email || !phone || !password || !age || !gender) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "Fields are required",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const organization = await Organization.findById(organizationId);
+
+    if (!organization) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Organization does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User already exists.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    const newUser = new User({
+      name,
+      email,
+      phone,
+      password,
+      age,
+      gender,
+      role: "client",
+      organization: organizationId,
+      status: "active",
+    });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    newUser.password = hashedPassword;
+
+    await newUser.save();
+
+    const token = jwt.sign({ email: newUser.email, id: newUser._id }, secret, {
+      expiresIn: 8 * 60 * 60,
+    });
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        message: "User registered successfully.",
+        user: {
+          email: newUser.email,
+          id: newUser._id,
+          role: newUser.role,
+          name: newUser.name,
+          token,
+        },
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};

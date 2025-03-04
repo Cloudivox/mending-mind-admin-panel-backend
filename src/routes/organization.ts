@@ -62,7 +62,7 @@ router.delete(
 );
 
 router.post(
-  "/add-therapist/:organizationId/:therapistId",
+  "/add-therapist/:organizationId",
   auth,
   async (req: Request, res: Response) => {
     await addTherapistInOrganization(req, res);

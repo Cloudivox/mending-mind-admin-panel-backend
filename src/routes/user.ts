@@ -8,6 +8,7 @@ import {
   updateUser,
   deleteUser,
   getAllTherapist,
+  clientRegistration,
 } from "../controllers/user";
 import auth from "../middleware/auth";
 const router = express.Router();
@@ -47,5 +48,12 @@ router.delete("/delete-user", auth, async (req: Request, res: Response) => {
 router.get("/get-all-therapists", auth, async (req: Request, res: Response) => {
   await getAllTherapist(req, res);
 });
+
+router.post(
+  "/client-register/:organizationId",
+  async (req: Request, res: Response) => {
+    await clientRegistration(req, res);
+  }
+);
 
 export default router;
