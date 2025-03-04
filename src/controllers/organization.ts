@@ -362,3 +362,71 @@ export const getDetailsByCode = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
+export const deleteTherapistFromOrganization = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  const userId = req.user_Id;
+  const { organizationId, therapistId } = req.params;
+
+  try {
+    // Check if user is an admin
+    const user = await User.findById(userId).select("role");
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({
+        status: "failure",
+        error: {
+          message: "Only an admin can remove a therapist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Find the organization
+    const organization = await Organization.findById(organizationId);
+    if (!organization) {
+      return res.status(404).json({
+        status: "failure",
+        error: {
+          message: "Organization not found.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    // Check if therapistId exists in the organization's therapists array
+    if (!organization.therapists.includes(therapistId)) {
+      return res.status(400).json({
+        status: "failure",
+        error: {
+          message: "Therapist is not associated with this organization.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Remove therapistId from therapists array
+    organization.therapists = organization.therapists.filter(
+      (id) => id.toString() !== therapistId
+    );
+
+    // Save the updated organization
+    await organization.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Therapist removed successfully.",
+      organization,
+    });
+  } catch (error) {
+    console.error("Error removing therapist:", error);
+    return res.status(500).json({
+      status: "failure",
+      error: {
+        message: "Internal Server Error",
+        name: "ServerError",
+      },
+    });
+  }
+};
