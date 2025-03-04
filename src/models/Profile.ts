@@ -6,6 +6,8 @@ export interface IProfile extends Document {
   qualification: string;
   specialization: string;
   experience: string;
+  age: string;
+  gender: string;
 }
 
 const ProfileSchema = new Schema<IProfile>(
