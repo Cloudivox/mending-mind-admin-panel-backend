@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Request, Response } from "express";
@@ -277,7 +278,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
   try {
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parseInt(req.query.limit as string) || 100;
     const search = (req.query.search as string) || "";
     const type = (req.query.role as string) || "";
 
@@ -311,11 +312,21 @@ export const getAllUsers = async (req: Request, res: Response) => {
     if (type) {
       const roles = type.split(",").map((role: string) => role.trim());
 
+      const roleFilters: any[] = [];
+
       if (roles.includes("therapist")) {
-        // Filter users whose _id is in the organization's therapists array
-        queries.push({ _id: { $in: organization.therapists } });
-      } else {
-        queries.push({ role: { $in: roles } });
+        roleFilters.push({ _id: { $in: organization.therapists } });
+      }
+
+      if (roles.includes("client")) {
+        roleFilters.push({
+          role: "client",
+          organizationId: new mongoose.Types.ObjectId(organizationId), // Ensure organizationId is treated correctly
+        });
+      }
+
+      if (roleFilters.length > 0) {
+        queries.push({ $or: roleFilters });
       }
     }
 
@@ -327,7 +338,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
     const totalPages = Math.ceil(totalUsers / limit);
 
     // Fetch paginated and filtered users
-    const users = await User.find(searchQuery, "email status name _id role")
+    const users = await User.find(
+      searchQuery,
+      "email status name _id role organizationId"
+    )
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -345,6 +359,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    console.error("Error:", error);
     res.status(500).json({
       Status: "failure",
       Error: {

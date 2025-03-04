@@ -17,6 +17,7 @@ export interface ISession extends Document {
   rescheduledReason: string;
   rescheduledStatus: string;
   isPackageCreated: Boolean;
+  organizationId: string;
   packageId: string;
   createdBy: string;
 }
@@ -41,6 +42,8 @@ const SessionSchema = new Schema<ISession>({
       "event",
       "package",
       "online-meeting",
+      "offline",
+      "online",
     ],
   },
   sessionDateTime: { type: String, required: true },
@@ -58,6 +61,7 @@ const SessionSchema = new Schema<ISession>({
     enum: ["pending", "approved", "rejected"],
   },
   isPackageCreated: { type: Boolean, required: false },
+  organizationId: { type: String, required: false },
   packageId: { type: String, required: false },
   createdBy: { type: String, required: true },
 });

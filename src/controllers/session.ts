@@ -5,6 +5,9 @@ import Session from "../models/Session";
 
 export const createSession = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
+
+  const { organizationId } = req.params;
+
   const {
     therapistId,
     clientId,
@@ -77,6 +80,7 @@ export const createSession = async (req: AuthRequest, res: Response) => {
       rescheduledReason: "",
       status: "pending",
       isPackageCreated: false,
+      organizationId,
       packageId: "",
       createdBy: userId,
     });
@@ -101,6 +105,7 @@ export const createSession = async (req: AuthRequest, res: Response) => {
 
 export const getAllSessions = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
+  const { organizationId } = req.params;
 
   try {
     const user = await User.findById(userId);
@@ -127,11 +132,11 @@ export const getAllSessions = async (req: AuthRequest, res: Response) => {
 
     let sessions;
     if (user.role === "admin") {
-      sessions = await Session.find({});
+      sessions = await Session.find({ organizationId });
     } else if (user.role === "therapist") {
-      sessions = await Session.find({ therapistId: userId });
+      sessions = await Session.find({ therapistId: userId, organizationId });
     } else if (user.role === "client") {
-      sessions = await Session.find({ clientId: userId });
+      sessions = await Session.find({ clientId: userId, organizationId });
     }
 
     if (!sessions || sessions.length === 0) {
@@ -161,17 +166,21 @@ export const getAllSessions = async (req: AuthRequest, res: Response) => {
     );
 
     const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
 
     const previousSessions = sessionsWithDetails.filter((session) => {
-      // Use sessionDateTime instead of separate date and time fields
       const sessionDate = new Date(session.sessionDateTime);
-      return sessionDate < currentDate;
+      // A session is considered previous only if its entire date is before today
+      const sessionStartOfDay = new Date(sessionDate);
+      sessionStartOfDay.setHours(0, 0, 0, 0);
+      return sessionStartOfDay < currentDate;
     });
 
     const upcomingSessions = sessionsWithDetails.filter((session) => {
-      // Use sessionDateTime instead of separate date and time fields
       const sessionDate = new Date(session.sessionDateTime);
-      return sessionDate >= currentDate;
+      const sessionStartOfDay = new Date(sessionDate);
+      sessionStartOfDay.setHours(0, 0, 0, 0);
+      return sessionStartOfDay >= currentDate;
     });
 
     res.status(200).json({
@@ -272,6 +281,44 @@ export const getSessionById = async (req: AuthRequest, res: Response) => {
       Status: "failure",
       Error: {
         message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const getLatestSessionByClient = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const { clientId } = req.params;
+
+    if (!clientId) {
+      return res.status(400).json({
+        status: "failure",
+        error: {
+          message: "Client ID is required.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Find the latest session for the client
+    const latestSession = await Session.findOne({ clientId })
+      .sort({ sessionDateTime: -1 }) // Sort by date descending
+      .limit(1);
+
+    return res.status(200).json({
+      status: "success",
+      data: latestSession || null, // Explicitly set `null` if no session is found
+    });
+  } catch (error) {
+    console.error("Error fetching latest session:", error);
+    return res.status(500).json({
+      status: "failure",
+      error: {
+        message: "Internal Server Error",
         name: "ServerError",
       },
     });
