@@ -109,7 +109,7 @@ export const getProfileDetails = async (req: Request, res: Response) => {
         Status: "success",
         Message: "Profile not found, returning user details.",
         Data: {
-          id: user.id,
+          userId: user.id,
           name: user.name,
           email: user.email,
           phone: user.phone,

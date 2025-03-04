@@ -12,11 +12,11 @@ export interface IProfile extends Document {
 
 const ProfileSchema = new Schema<IProfile>(
   {
-    bio: { type: String, required: true },
+    bio: { type: String },
     userId: { type: String, required: true },
-    qualification: { type: String, required: true },
-    specialization: { type: String, required: true },
-    experience: { type: String, required: true },
+    qualification: { type: String },
+    specialization: { type: String },
+    experience: { type: String },
   },
   {
     toJSON: {
