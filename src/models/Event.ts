@@ -15,6 +15,8 @@ export interface IEvent extends Document {
   isPaid: boolean;
   price?: number;
   capacity?: number;
+  host: string;
+  hostDescription?: string;
 }
 
 const EventSchema = new Schema<IEvent>(
@@ -57,6 +59,8 @@ const EventSchema = new Schema<IEvent>(
       },
     }, // Only required if event is paid
     capacity: { type: Number, required: false }, // Optional: Max number of participants
+    host: { type: String, required: true },
+    hostDescription: { type: String, required: false },
   },
   {
     toJSON: {

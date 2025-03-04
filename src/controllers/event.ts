@@ -1,0 +1,184 @@
+import { Response } from "express";
+import User from "../models/User";
+import { AuthRequest } from "../middleware/auth";
+import Event from "../models/Event";
+
+export const createEvent = async (req: AuthRequest, res: Response) => {
+  const {
+    name,
+    description,
+    location,
+    date,
+    time,
+    duration,
+    participants,
+    isPaid,
+    price,
+    host,
+    hostDescription,
+  } = req.body;
+  const userId = req.user_Id;
+  const createdBy = userId;
+
+  if (
+    !createdBy ||
+    !name ||
+    !description ||
+    !location ||
+    !date ||
+    !time ||
+    !duration ||
+    !host
+  ) {
+    return res.status(403).json({
+      Status: "failure",
+      Error: {
+        message: "All fields are required.",
+        name: "ValidationError",
+      },
+    });
+  }
+
+  try {
+    const user = await User.findById(createdBy);
+
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    const newEvent = new Event({
+      name,
+      description,
+      location,
+      date,
+      time,
+      duration,
+      participants,
+      isPaid,
+      price,
+      eventType: "organization",
+      createdAt: new Date().toISOString(),
+      createdBy: createdBy,
+      status: "upcoming",
+      host,
+      hostDescription,
+    });
+
+    await newEvent.save();
+
+    res.status(200).json({
+      Status: "success",
+      Data: newEvent,
+    });
+  } catch (error) {
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const getAllEvents = async (req: AuthRequest, res: Response) => {
+  const userId = req.user_Id;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+    const events = await Event.find();
+
+    if (!events || events.length === 0) {
+      return res.status(200).json({
+        Status: "success",
+        Data: [],
+      });
+    } else {
+      res.status(200).json({
+        Status: "success",
+        Data: events,
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};
+
+export const joinEvent = async (req: AuthRequest, res: Response) => {
+  const userId = req.user_Id as string;
+  const { eventId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Event not found.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    if (event.participants.includes(userId)) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User already joined the event.",
+          name: "DuplicateEntryError",
+        },
+      });
+    }
+
+    event.participants.push(userId);
+    await event.save();
+
+    res.status(200).json({
+      Status: "success",
+      Data: event,
+    });
+  } catch (error) {
+    console.error("Error joining event:", error);
+    res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error.",
+        name: "ServerError",
+      },
+    });
+  }
+};

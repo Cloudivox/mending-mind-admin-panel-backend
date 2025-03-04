@@ -179,7 +179,7 @@ export const updateOrganization = async (req: AuthRequest, res: Response) => {
 
     const organization = await Organization.findById(id);
     if (!organization) {
-      return res.status(404).json({
+      return res.status(403).json({
         Status: "failure",
         Error: {
           message: "Organization not found.",
@@ -259,7 +259,7 @@ export const deleteOrganization = async (req: AuthRequest, res: Response) => {
 
     const organization = await Organization.findById(id);
     if (!organization) {
-      return res.status(404).json({
+      return res.status(403).json({
         Status: "failure",
         Error: {
           message: "Organization not found.",
@@ -386,7 +386,7 @@ export const deleteTherapistFromOrganization = async (
     // Find the organization
     const organization = await Organization.findById(organizationId);
     if (!organization) {
-      return res.status(404).json({
+      return res.status(403).json({
         status: "failure",
         error: {
           message: "Organization not found.",
@@ -466,7 +466,7 @@ export const addTherapistInOrganization = async (
     // Find the organization
     const organization = await Organization.findById(organizationId);
     if (!organization) {
-      return res.status(404).json({
+      return res.status(403).json({
         status: "failure",
         error: {
           message: "Organization not found.",

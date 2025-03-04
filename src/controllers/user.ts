@@ -372,7 +372,7 @@ export const updateUser = async (req: Request, res: Response) => {
     const user = await User.findById(_id);
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(403).json({
         Status: "failure",
         Error: {
           message: "User not found.",
@@ -421,7 +421,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await User.findById(_id);
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(403).json({
         Status: "failure",
         Error: {
           message: "User does not exist.",
