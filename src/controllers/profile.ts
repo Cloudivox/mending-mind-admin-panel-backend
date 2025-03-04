@@ -105,11 +105,16 @@ export const getProfileDetails = async (req: Request, res: Response) => {
     const profile = await Profile.findOne({ userId });
 
     if (!profile) {
-      return res.status(403).json({
-        Status: "failure",
-        Error: {
-          message: "Profile not found.",
-          name: "NotFoundError",
+      return res.status(200).json({
+        Status: "success",
+        Message: "Profile not found, returning user details.",
+        Data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          age: user.age,
+          gender: user.gender,
         },
       });
     }
