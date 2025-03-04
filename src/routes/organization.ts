@@ -1,8 +1,10 @@
 import express, { Request, Response } from "express";
 import auth from "../middleware/auth";
 import {
+  addTherapistInOrganization,
   createOrganization,
   deleteOrganization,
+  deleteTherapistFromOrganization,
   getAllOrganizations,
   getDetailsByCode,
   updateOrganization,
@@ -50,5 +52,21 @@ router.post("/verify-code", async (req: Request, res: Response) => {
 router.get("/:code", auth, async (req: Request, res: Response) => {
   await getDetailsByCode(req, res);
 });
+
+router.delete(
+  "/delete-therapist-organization/:organizationId/:therapistId",
+  auth,
+  async (req: Request, res: Response) => {
+    await deleteTherapistFromOrganization(req, res);
+  }
+);
+
+router.post(
+  "/add-therapist/:organizationId/:therapistId",
+  auth,
+  async (req: Request, res: Response) => {
+    await addTherapistInOrganization(req, res);
+  }
+);
 
 export default router;

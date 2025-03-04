@@ -6,6 +6,7 @@ import Organization from "../models/Organization";
 import { AuthRequest } from "../middleware/auth";
 
 const secret = "mending-mind-admin-panel";
+export const MENDING_MIND_ID = "67c42246019b4349af563057";
 
 export const signin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -130,6 +131,13 @@ export const createUser = async (req: Request, res: Response) => {
     }) as InstanceType<typeof User>;
 
     if (role === "therapist") {
+      if (MENDING_MIND_ID !== organizationId) {
+        const mendingMindOrg = await Organization.findById(MENDING_MIND_ID);
+        if (mendingMindOrg) {
+          mendingMindOrg.therapists.push(String(newUser._id));
+          await mendingMindOrg.save();
+        }
+      }
       organization.therapists.push(String(newUser._id));
       await organization.save();
     }

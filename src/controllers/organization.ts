@@ -430,3 +430,113 @@ export const deleteTherapistFromOrganization = async (
     });
   }
 };
+
+export const addTherapistInOrganization = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  const userId = req.user_Id; // Authenticated admin's ID
+  const { organizationId } = req.params;
+  const { therapistIds } = req.body; // Array of therapist IDs
+
+  try {
+    // Validate input
+    if (!Array.isArray(therapistIds) || therapistIds.length === 0) {
+      return res.status(400).json({
+        status: "failure",
+        error: {
+          message: "Therapist IDs must be provided as a non-empty array.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Check if the user is an admin
+    const user = await User.findById(userId).select("role");
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({
+        status: "failure",
+        error: {
+          message: "Only an admin can add therapists.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Find the organization
+    const organization = await Organization.findById(organizationId);
+    if (!organization) {
+      return res.status(404).json({
+        status: "failure",
+        error: {
+          message: "Organization not found.",
+          name: "NotFoundError",
+        },
+      });
+    }
+
+    // Get therapist users from the database
+    const validTherapists = await User.find({
+      _id: { $in: therapistIds },
+      role: "therapist",
+    }).select("_id");
+
+    // Extract valid therapist IDs
+    const validTherapistIds = validTherapists.map((therapist) =>
+      String(therapist._id)
+    );
+
+    // Find invalid therapist IDs
+    const invalidTherapistIds = therapistIds.filter(
+      (id) => !validTherapistIds.includes(id)
+    );
+    if (invalidTherapistIds.length > 0) {
+      return res.status(400).json({
+        status: "failure",
+        error: {
+          message:
+            "Some provided therapist IDs are invalid or do not belong to therapists.",
+          invalidIds: invalidTherapistIds,
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Remove duplicates: Only add new therapists
+    const newTherapists = validTherapistIds.filter(
+      (id) => !organization.therapists.includes(id)
+    );
+    if (newTherapists.length === 0) {
+      return res.status(400).json({
+        status: "failure",
+        error: {
+          message:
+            "All therapists are already associated with this organization.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Append new therapists to the organization
+    organization.therapists.push(...newTherapists);
+
+    // Save the updated organization
+    await organization.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Therapists added successfully.",
+      addedTherapists: newTherapists,
+      organization,
+    });
+  } catch (error) {
+    console.error("Error adding therapists:", error);
+    return res.status(500).json({
+      status: "failure",
+      error: {
+        message: "Internal Server Error",
+        name: "ServerError",
+      },
+    });
+  }
+};
