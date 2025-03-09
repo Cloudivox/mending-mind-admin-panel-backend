@@ -12,10 +12,12 @@ router.get("/get-all-events", auth, async (req: Request, res: Response) => {
   await getAllEvents(req, res);
 });
 
-router.post("/join-event/:eventId", auth, async (req: Request, res: Response) => {
-  await joinEvent(req, res);
-});
-
-
+router.post(
+  "/join-event/:eventId",
+  auth,
+  async (req: Request, res: Response) => {
+    await joinEvent(req, res);
+  }
+);
 
 export default router;

@@ -110,9 +110,29 @@ export const getAllEvents = async (req: AuthRequest, res: Response) => {
         Data: [],
       });
     } else {
-      res.status(200).json({
+      const eventsWithParticipants = await Promise.all(
+        events.map(async (event) => {
+          const participants = await User.find(
+            { _id: { $in: event.participants } },
+            { _id: 1, name: 1, email: 1 }
+          ).lean();
+
+          const formattedParticipants = participants.map((participant) => ({
+            id: participant._id.toString(),
+            name: participant.name,
+            email: participant.email,
+          }));
+
+          return {
+            ...event.toObject(),
+            participants: formattedParticipants,
+          };
+        })
+      );
+
+      return res.status(200).json({
         Status: "success",
-        Data: events,
+        Data: eventsWithParticipants,
       });
     }
   } catch (error) {
