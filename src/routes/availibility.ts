@@ -5,22 +5,26 @@ import {
   deleteAvailibility,
   getAvailibility,
   updateTime,
-  getAvailibilityByUserIdAndDate
+  getAvailibilityByUserIdAndDate,
 } from "../controllers/availibility";
 
 const router = express.Router();
 
 router.post(
-  "/create-availibility",
+  "/create-availibility/:organizationId",
   auth,
   async (req: Request, res: Response) => {
     await createAvailibility(req, res);
   }
 );
 
-router.get("/get-availibility", auth, async (req: Request, res: Response) => {
-  await getAvailibility(req, res);
-});
+router.get(
+  "/get-availibility/:organizationId",
+  auth,
+  async (req: Request, res: Response) => {
+    await getAvailibility(req, res);
+  }
+);
 
 router.put(
   "/update-availibility",
@@ -39,10 +43,10 @@ router.delete(
 );
 
 router.get(
-  "/:userId",
+  "/:userId/:organizationId",
   auth,
   async (req: Request, res: Response) => {
     await getAvailibilityByUserIdAndDate(req, res);
   }
-)
+);
 export default router;

@@ -4,8 +4,9 @@ import Availibility from "../models/Availibility";
 import { AuthRequest } from "../middleware/auth";
 
 export const createAvailibility = async (req: AuthRequest, res: Response) => {
-  const { date, startTime, endTime, type } = req.body;
+  const { date, startTime, endTime, type, therapistId } = req.body;
   const userId = req.user_Id;
+  const { organizationId } = req.params;
 
   if (!userId || !date || !startTime || !endTime || !type) {
     return res.status(403).json({
@@ -31,13 +32,14 @@ export const createAvailibility = async (req: AuthRequest, res: Response) => {
     }
 
     const newAvailibility = new Availibility({
-      userId,
+      userId: therapistId,
       date,
       startTime,
       endTime,
       type,
       status: "available",
       clientId: "",
+      organizationId,
     });
 
     await newAvailibility.save();
@@ -61,6 +63,7 @@ export const createAvailibility = async (req: AuthRequest, res: Response) => {
 
 export const getAvailibility = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
+  const { organizationId } = req.params;
   // Extract date from query parameters instead of route parameters
   const date = req.query.date as string; // typecast if needed
 
@@ -87,16 +90,6 @@ export const getAvailibility = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    if (user.role !== "therapist" && user.role !== "admin") {
-      return res.status(403).json({
-        Status: "failure",
-        Error: {
-          message: "User is not a therapist.",
-          name: "ValidationError",
-        },
-      });
-    }
-
     if (user.status !== "active") {
       return res.status(403).json({
         Status: "failure",
@@ -107,30 +100,44 @@ export const getAvailibility = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    if (user.role === "admin") {
-      const availibility = await Availibility.find({ date });
+    let availibility;
+    const userRole = user.role as string;
 
-      res.status(200).json({
-        Status: "success",
-        Data: {
-          availibility,
-          count: availibility.length,
-        },
-      });
-    } else if (user.role === "therapist") {
-      const availibility = await Availibility.find({
+    if (userRole === "admin" || userRole === "client") {
+      // Fetch all availabilities and include therapist name
+      availibility = await Availibility.find({ date, organizationId }).populate(
+        {
+          path: "userId",
+          select: "name",
+        }
+      );
+    } else if (userRole === "therapist") {
+      // Fetch only the therapist's own availabilities
+      availibility = await Availibility.find({
         userId,
         date,
+        organizationId,
+      }).populate({
+        path: "userId",
+        select: "name",
       });
-
-      res.status(200).json({
-        Status: "success",
-        Data: {
-          availibility,
-          count: availibility.length,
+    } else {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Unauthorized access.",
+          name: "AuthorizationError",
         },
       });
     }
+
+    res.status(200).json({
+      Status: "success",
+      Data: {
+        availibility,
+        count: availibility.length,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       Status: "failure",
@@ -247,7 +254,7 @@ export const getAvailibilityByUserIdAndDate = async (
   req: AuthRequest,
   res: Response
 ) => {
-  const { userId } = req.params;
+  const { userId, organizationId } = req.params;
   const date = req.query.date as string;
 
   if (!date) {
@@ -297,6 +304,7 @@ export const getAvailibilityByUserIdAndDate = async (
       userId,
       date,
       status: "available",
+      organizationId,
     });
 
     res.status(200).json({
