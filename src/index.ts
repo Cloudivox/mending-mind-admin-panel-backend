@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 app.use("/auth-service/v1/auth", userRoutes);
 app.use("/auth-service/v1/profile", profileRoutes);
 app.use("/availability-service/v1/availability", availabilityRoutes);
-app.use("reschedule-session-service/v1/reschedule", rescheduleRoutes);
+app.use("/reschedule-session-service/v1/reschedule", rescheduleRoutes);
 app.use("/blog-service/v1/blog", blogRoutes);
 app.use("/session-package-service/v1/session-package", sessionPackageRoutes);
 app.use("/session-service/v1/session", sessionRoutes);
@@ -64,4 +64,4 @@ httpServer.listen(PORT, () =>
 );
 
 // For Vercel
-module.exports = app;
+export default app;
