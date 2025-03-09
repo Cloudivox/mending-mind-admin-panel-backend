@@ -2,17 +2,17 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { createServer } from "http";
-import connectDB from "./src/config/db";
-import userRoutes from "./src/routes/user";
-import profileRoutes from "./src/routes/profile";
-import availabilityRoutes from "./src/routes/availibility";
-import rescheduleRoutes from "./src/routes/reschedule";
-import blogRoutes from "./src/routes/blog";
-import sessionPackageRoutes from "./src/routes/session-package";
-import sessionRoutes from "./src/routes/session";
-import organizationRoutes from "./src/routes/organization";
-import sessionNotesRoutes from "./src/routes/session-notes";
-import eventRoutes from "./src/routes/event";
+import connectDB from "./config/db";
+import userRoutes from "./routes/user";
+import profileRoutes from "./routes/profile";
+import availabilityRoutes from "./routes/availibility";
+import rescheduleRoutes from "./routes/reschedule";
+import blogRoutes from "./routes/blog";
+import sessionPackageRoutes from "./routes/session-package";
+import sessionRoutes from "./routes/session";
+import organizationRoutes from "./routes/organization";
+import sessionNotesRoutes from "./routes/session-notes";
+import eventRoutes from "./routes/event";
 
 dotenv.config();
 
