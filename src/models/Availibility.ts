@@ -10,6 +10,7 @@ export interface IAvailibility extends Document {
   rescheduledStatus: string;
   clientId: string;
   organizationId: string;
+  sessionId: string;
 }
 
 const AvailibilitySchema = new Schema<IAvailibility>({
@@ -30,6 +31,7 @@ const AvailibilitySchema = new Schema<IAvailibility>({
     default: "none",
     enum: ["none", "pending", "approved", "rejected"],
   },
+  sessionId: { type: String, required: false },
 });
 
 export default mongoose.model("Availibility", AvailibilitySchema);

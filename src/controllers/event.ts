@@ -19,6 +19,7 @@ export const createEvent = async (req: AuthRequest, res: Response) => {
   } = req.body;
   const userId = req.user_Id;
   const createdBy = userId;
+  const organizationId = req.params.organizationId;
 
   if (
     !createdBy ||
@@ -68,6 +69,7 @@ export const createEvent = async (req: AuthRequest, res: Response) => {
       status: "upcoming",
       host,
       hostDescription,
+      organizationId,
     });
 
     await newEvent.save();
@@ -89,6 +91,7 @@ export const createEvent = async (req: AuthRequest, res: Response) => {
 
 export const getAllEvents = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
+  const organizationId = req.params.organizationId;
 
   try {
     const user = await User.findById(userId);
@@ -102,7 +105,9 @@ export const getAllEvents = async (req: AuthRequest, res: Response) => {
         },
       });
     }
-    const events = await Event.find();
+    const events = await Event.find({
+      organizationId: organizationId,
+    }).sort({ createdAt: -1 });
 
     if (!events || events.length === 0) {
       return res.status(200).json({

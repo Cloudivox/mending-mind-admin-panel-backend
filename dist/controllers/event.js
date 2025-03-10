@@ -19,6 +19,7 @@ const createEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const { name, description, location, date, time, duration, participants, isPaid, price, host, hostDescription, } = req.body;
     const userId = req.user_Id;
     const createdBy = userId;
+    const organizationId = req.params.organizationId;
     if (!createdBy ||
         !name ||
         !description ||
@@ -62,6 +63,7 @@ const createEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             status: "upcoming",
             host,
             hostDescription,
+            organizationId,
         });
         yield newEvent.save();
         res.status(200).json({
@@ -82,6 +84,7 @@ const createEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.createEvent = createEvent;
 const getAllEvents = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user_Id;
+    const organizationId = req.params.organizationId;
     try {
         const user = yield User_1.default.findById(userId);
         if (!user) {
@@ -93,7 +96,9 @@ const getAllEvents = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             });
         }
-        const events = yield Event_1.default.find();
+        const events = yield Event_1.default.find({
+            organizationId: organizationId,
+        }).sort({ createdAt: -1 });
         if (!events || events.length === 0) {
             return res.status(200).json({
                 Status: "success",

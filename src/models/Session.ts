@@ -1,6 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface ISession extends Document {
+  _id: Types.ObjectId;
   name: string;
   therapistId: string;
   clientId: string;
@@ -66,4 +67,5 @@ const SessionSchema = new Schema<ISession>({
   createdBy: { type: String, required: true },
 });
 
-export default mongoose.model("Session", SessionSchema);
+const Session = mongoose.model<ISession>("Session", SessionSchema);
+export default Session;

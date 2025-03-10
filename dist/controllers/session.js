@@ -15,17 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLatestSessionByClient = exports.getSessionById = exports.getAllSessions = exports.createSession = void 0;
 const User_1 = __importDefault(require("../models/User"));
 const Session_1 = __importDefault(require("../models/Session"));
+const Availibility_1 = __importDefault(require("../models/Availibility"));
 const createSession = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user_Id;
     const { organizationId } = req.params;
-    const { therapistId, clientId, sessionDateTime, duration, location, isNewClient, isPaid, type, name, } = req.body;
+    const { therapistId, clientId, sessionDateTime, duration, location, isNewClient, isPaid, type, name, availibilityId, } = req.body;
     if (!therapistId ||
         !clientId ||
         !sessionDateTime ||
         !duration ||
         !location ||
         !type ||
-        !name) {
+        !name ||
+        !availibilityId) {
         res.status(403).json({
             Status: "failure",
             Error: {
@@ -58,6 +60,17 @@ const createSession = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             });
             return;
         }
+        const availibility = yield Availibility_1.default.findById(availibilityId);
+        if (!availibility) {
+            res.status(403).json({
+                Status: "failure",
+                Error: {
+                    message: "Availibility does not exist.",
+                    name: "ValidationError",
+                },
+            });
+            return;
+        }
         const newSession = new Session_1.default({
             therapistId,
             clientId,
@@ -79,6 +92,10 @@ const createSession = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             createdBy: userId,
         });
         yield newSession.save();
+        availibility.clientId = clientId;
+        availibility.status = "booked";
+        availibility.sessionId = newSession._id.toString();
+        yield availibility.save();
         res.status(201).json({
             Status: "success",
             Message: "Session created successfully",
@@ -197,15 +214,6 @@ const getSessionById = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 },
             });
         }
-        // if (user.role !== "admin" && user.role !== "therapist") {
-        //   return res.status(403).json({
-        //     Status: "failure",
-        //     Error: {
-        //       message: "Only admin and therapist can access it.",
-        //       name: "AuthorizationError",
-        //     },
-        //   });
-        // }
         const session = yield Session_1.default.findById(sessionId);
         if (!session) {
             return res.status(403).json({

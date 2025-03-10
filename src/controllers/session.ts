@@ -2,6 +2,7 @@ import { Response } from "express";
 import User from "../models/User";
 import { AuthRequest } from "../middleware/auth";
 import Session from "../models/Session";
+import Availibility from "../models/Availibility";
 
 export const createSession = async (req: AuthRequest, res: Response) => {
   const userId = req.user_Id;
@@ -18,6 +19,7 @@ export const createSession = async (req: AuthRequest, res: Response) => {
     isPaid,
     type,
     name,
+    availibilityId,
   } = req.body;
 
   if (
@@ -27,7 +29,8 @@ export const createSession = async (req: AuthRequest, res: Response) => {
     !duration ||
     !location ||
     !type ||
-    !name
+    !name ||
+    !availibilityId
   ) {
     res.status(403).json({
       Status: "failure",
@@ -64,6 +67,19 @@ export const createSession = async (req: AuthRequest, res: Response) => {
       return;
     }
 
+    const availibility = await Availibility.findById(availibilityId);
+
+    if (!availibility) {
+      res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "Availibility does not exist.",
+          name: "ValidationError",
+        },
+      });
+      return;
+    }
+
     const newSession = new Session({
       therapistId,
       clientId,
@@ -86,6 +102,12 @@ export const createSession = async (req: AuthRequest, res: Response) => {
     });
 
     await newSession.save();
+
+    availibility.clientId = clientId;
+    availibility.status = "booked";
+    availibility.sessionId = newSession._id.toString();
+
+    await availibility.save();
 
     res.status(201).json({
       Status: "success",
@@ -226,16 +248,6 @@ export const getSessionById = async (req: AuthRequest, res: Response) => {
         },
       });
     }
-
-    // if (user.role !== "admin" && user.role !== "therapist") {
-    //   return res.status(403).json({
-    //     Status: "failure",
-    //     Error: {
-    //       message: "Only admin and therapist can access it.",
-    //       name: "AuthorizationError",
-    //     },
-    //   });
-    // }
 
     const session = await Session.findById(sessionId);
 

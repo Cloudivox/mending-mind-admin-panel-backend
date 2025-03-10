@@ -16,6 +16,7 @@ export interface IEvent extends Document {
   price?: number;
   capacity?: number;
   host: string;
+  organizationId: string;
   hostDescription?: string;
 }
 
@@ -61,6 +62,7 @@ const EventSchema = new Schema<IEvent>(
     capacity: { type: Number, required: false }, // Optional: Max number of participants
     host: { type: String, required: true },
     hostDescription: { type: String, required: false },
+    organizationId: { type: String, required: true },
   },
   {
     toJSON: {

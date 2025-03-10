@@ -77,4 +77,5 @@ const SessionSchema = new mongoose_1.Schema({
     packageId: { type: String, required: false },
     createdBy: { type: String, required: true },
 });
-exports.default = mongoose_1.default.model("Session", SessionSchema);
+const Session = mongoose_1.default.model("Session", SessionSchema);
+exports.default = Session;

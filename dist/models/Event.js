@@ -75,6 +75,7 @@ const EventSchema = new mongoose_1.Schema({
     capacity: { type: Number, required: false }, // Optional: Max number of participants
     host: { type: String, required: true },
     hostDescription: { type: String, required: false },
+    organizationId: { type: String, required: true },
 }, {
     toJSON: {
         virtuals: true,

@@ -16,10 +16,10 @@ const express_1 = __importDefault(require("express"));
 const auth_1 = __importDefault(require("../middleware/auth"));
 const event_1 = require("../controllers/event");
 const router = express_1.default.Router();
-router.post("/create-event", auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/create-event/:organizationId", auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, event_1.createEvent)(req, res);
 }));
-router.get("/get-all-events", auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/get-all-events/:organizationId", auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, event_1.getAllEvents)(req, res);
 }));
 router.post("/join-event/:eventId", auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

@@ -52,5 +52,6 @@ const AvailibilitySchema = new mongoose_1.Schema({
         default: "none",
         enum: ["none", "pending", "approved", "rejected"],
     },
+    sessionId: { type: String, required: false },
 });
 exports.default = mongoose_1.default.model("Availibility", AvailibilitySchema);
