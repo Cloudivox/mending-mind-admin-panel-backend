@@ -256,27 +256,26 @@ const getLatestSessionByClient = (req, res) => __awaiter(void 0, void 0, void 0,
         const { clientId } = req.params;
         if (!clientId) {
             return res.status(400).json({
-                status: "failure",
-                error: {
+                Status: "failure",
+                Error: {
                     message: "Client ID is required.",
                     name: "ValidationError",
                 },
             });
         }
-        // Find the latest session for the client
         const latestSession = yield Session_1.default.findOne({ clientId })
-            .sort({ sessionDateTime: -1 }) // Sort by date descending
+            .sort({ sessionDateTime: -1 })
             .limit(1);
         return res.status(200).json({
-            status: "success",
-            data: latestSession || null, // Explicitly set `null` if no session is found
+            Status: "success",
+            Data: { data: latestSession || null },
         });
     }
     catch (error) {
         console.error("Error fetching latest session:", error);
         return res.status(500).json({
-            status: "failure",
-            error: {
+            Status: "failure",
+            Error: {
                 message: "Internal Server Error",
                 name: "ServerError",
             },
