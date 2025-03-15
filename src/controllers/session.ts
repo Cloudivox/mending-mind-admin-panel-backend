@@ -375,14 +375,13 @@ export const getSessionDataForHome = async (
     // Find completed sessions
     const completedSessions = await Session.countDocuments({
       ...query,
-      status: "completed",
+      sessionDateTime: { $lt: currentTimeISOString },
     });
 
     // Find upcoming sessions (sessions with datetime greater than current time)
     const upcomingSessions = await Session.countDocuments({
       ...query,
       sessionDateTime: { $gt: currentTimeISOString },
-      status: { $ne: "completed" },
     });
 
     // Find today's sessions count

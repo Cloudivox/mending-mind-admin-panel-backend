@@ -311,9 +311,9 @@ const getSessionDataForHome = (req, res) => __awaiter(void 0, void 0, void 0, fu
         const tomorrowISOString = tomorrow.toISOString();
         const currentTimeISOString = new Date().toISOString();
         // Find completed sessions
-        const completedSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { status: "completed" }));
+        const completedSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { sessionDateTime: { $lt: currentTimeISOString } }));
         // Find upcoming sessions (sessions with datetime greater than current time)
-        const upcomingSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { sessionDateTime: { $gt: currentTimeISOString }, status: { $ne: "completed" } }));
+        const upcomingSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { sessionDateTime: { $gt: currentTimeISOString } }));
         // Find today's sessions count
         const todaysSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { sessionDateTime: {
                 $gte: todayISOString,
