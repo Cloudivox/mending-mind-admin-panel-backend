@@ -1,5 +1,12 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+interface FileBase64 {
+  base64: string;
+  name: string;
+  type: string;
+  size?: number;
+}
+
 export interface IOrganization extends Document {
   id: string;
   name: string;
@@ -7,7 +14,7 @@ export interface IOrganization extends Document {
   code: string;
   country: string;
   description: string;
-  logo: string;
+  logo: FileBase64 | null;
   status: string;
   createdAt: string;
   createdBy: string;
@@ -16,14 +23,25 @@ export interface IOrganization extends Document {
   therapists: string[];
 }
 
-const OrganizationSchema = new Schema<IOrganization>(
+const OrganizationSchema = new Schema(
   {
     name: { type: String, required: true },
     location: { type: String, required: true },
     code: { type: String, required: true },
     country: { type: String, required: true },
     description: { type: String },
-    logo: { type: String },
+    logo: {
+      type: new Schema(
+        {
+          base64: String,
+          name: String,
+          type: String,
+          size: Number,
+        },
+        { _id: false }
+      ),
+      default: null,
+    },
     status: { type: String, required: true },
     createdAt: { type: String, required: true },
     createdBy: { type: String, required: true },
@@ -51,7 +69,4 @@ const OrganizationSchema = new Schema<IOrganization>(
   }
 );
 
-export default mongoose.model<IOrganization>(
-  "Organization",
-  OrganizationSchema
-);
+export default mongoose.model("Organization", OrganizationSchema);

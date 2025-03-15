@@ -194,7 +194,7 @@ export const updateOrganization = async (req: AuthRequest, res: Response) => {
       ...(code && { code }),
       ...(country && { country }),
       ...(description && { description }),
-      ...(logo && { logo }),
+      ...(logo ? { logo } : { logo: null }),
       ...(therapists && { therapists }),
       updatedAt: new Date().toISOString(),
       updatedBy: userId,
