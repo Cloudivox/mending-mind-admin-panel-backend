@@ -105,16 +105,24 @@ export const getAllEvents = async (req: AuthRequest, res: Response) => {
         },
       });
     }
+
     const events = await Event.find({
       organizationId: organizationId,
-    }).sort({ createdAt: -1 });
+    }).sort({ date: 1, time: 1 });
 
     if (!events || events.length === 0) {
       return res.status(200).json({
         Status: "success",
-        Data: [],
+        Data: {
+          previousEvents: [],
+          upcomingEvents: [],
+        },
       });
     } else {
+      // Current date for comparison
+      const currentDate = new Date();
+
+      // Process events with participants
       const eventsWithParticipants = await Promise.all(
         events.map(async (event) => {
           const participants = await User.find(
@@ -135,9 +143,33 @@ export const getAllEvents = async (req: AuthRequest, res: Response) => {
         })
       );
 
+      // Split events into previous and upcoming
+      const previousEvents = [];
+      const upcomingEvents = [];
+
+      for (const event of eventsWithParticipants) {
+        // Parse event date and time to compare with current date
+        const eventDateTime = new Date(`${event.date}T${event.time}`);
+
+        // Events in the past or with completed/cancelled status go to previous
+        if (
+          eventDateTime < currentDate ||
+          event.status === "completed" ||
+          event.status === "cancelled"
+        ) {
+          previousEvents.push(event);
+        } else {
+          // Future events or ongoing events go to upcoming
+          upcomingEvents.push(event);
+        }
+      }
+
       return res.status(200).json({
         Status: "success",
-        Data: eventsWithParticipants,
+        Data: {
+          previousEvents,
+          upcomingEvents,
+        },
       });
     }
   } catch (error) {

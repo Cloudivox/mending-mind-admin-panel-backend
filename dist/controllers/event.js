@@ -98,14 +98,20 @@ const getAllEvents = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
         const events = yield Event_1.default.find({
             organizationId: organizationId,
-        }).sort({ createdAt: -1 });
+        }).sort({ date: 1, time: 1 });
         if (!events || events.length === 0) {
             return res.status(200).json({
                 Status: "success",
-                Data: [],
+                Data: {
+                    previousEvents: [],
+                    upcomingEvents: [],
+                },
             });
         }
         else {
+            // Current date for comparison
+            const currentDate = new Date();
+            // Process events with participants
             const eventsWithParticipants = yield Promise.all(events.map((event) => __awaiter(void 0, void 0, void 0, function* () {
                 const participants = yield User_1.default.find({ _id: { $in: event.participants } }, { _id: 1, name: 1, email: 1 }).lean();
                 const formattedParticipants = participants.map((participant) => ({
@@ -115,9 +121,29 @@ const getAllEvents = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 }));
                 return Object.assign(Object.assign({}, event.toObject()), { participants: formattedParticipants });
             })));
+            // Split events into previous and upcoming
+            const previousEvents = [];
+            const upcomingEvents = [];
+            for (const event of eventsWithParticipants) {
+                // Parse event date and time to compare with current date
+                const eventDateTime = new Date(`${event.date}T${event.time}`);
+                // Events in the past or with completed/cancelled status go to previous
+                if (eventDateTime < currentDate ||
+                    event.status === "completed" ||
+                    event.status === "cancelled") {
+                    previousEvents.push(event);
+                }
+                else {
+                    // Future events or ongoing events go to upcoming
+                    upcomingEvents.push(event);
+                }
+            }
             return res.status(200).json({
                 Status: "success",
-                Data: eventsWithParticipants,
+                Data: {
+                    previousEvents,
+                    upcomingEvents,
+                },
             });
         }
     }
