@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLatestSessionByClient = exports.getSessionById = exports.getAllSessions = exports.createSession = void 0;
+exports.getSessionDataForHome = exports.getLatestSessionByClient = exports.getSessionById = exports.getAllSessions = exports.createSession = void 0;
 const User_1 = __importDefault(require("../models/User"));
 const Session_1 = __importDefault(require("../models/Session"));
 const Availibility_1 = __importDefault(require("../models/Availibility"));
@@ -283,3 +283,60 @@ const getLatestSessionByClient = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.getLatestSessionByClient = getLatestSessionByClient;
+const getSessionDataForHome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user_Id;
+    const { organizationId } = req.params;
+    try {
+        const user = yield User_1.default.findById(userId);
+        if (!user) {
+            return res.status(403).json({
+                Status: "failure",
+                Error: {
+                    message: "User does not exist.",
+                    name: "ValidationError",
+                },
+            });
+        }
+        // Base query depending on user role
+        let query = { organizationId };
+        if (user.role === "therapist") {
+            query.therapistId = userId;
+        }
+        // Get current date at midnight (start of day) in ISO format
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const todayISOString = today.toISOString();
+        const tomorrowISOString = tomorrow.toISOString();
+        const currentTimeISOString = new Date().toISOString();
+        // Find completed sessions
+        const completedSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { status: "completed" }));
+        // Find upcoming sessions (sessions with datetime greater than current time)
+        const upcomingSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { sessionDateTime: { $gt: currentTimeISOString }, status: { $ne: "completed" } }));
+        // Find today's sessions count
+        const todaysSessions = yield Session_1.default.countDocuments(Object.assign(Object.assign({}, query), { sessionDateTime: {
+                $gte: todayISOString,
+                $lt: tomorrowISOString,
+            } }));
+        return res.status(200).json({
+            Status: "success",
+            Data: {
+                totalSessionsCompleted: completedSessions,
+                totalUpcomingSessions: upcomingSessions,
+                totalTodaysSessions: todaysSessions,
+            },
+        });
+    }
+    catch (error) {
+        console.error("Error fetching session data for home:", error);
+        return res.status(500).json({
+            Status: "failure",
+            Error: {
+                message: "Internal Server Error",
+                name: "ServerError",
+            },
+        });
+    }
+});
+exports.getSessionDataForHome = getSessionDataForHome;

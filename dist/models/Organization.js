@@ -40,7 +40,15 @@ const OrganizationSchema = new mongoose_1.Schema({
     code: { type: String, required: true },
     country: { type: String, required: true },
     description: { type: String },
-    logo: { type: String },
+    logo: {
+        type: new mongoose_1.Schema({
+            base64: String,
+            name: String,
+            type: String,
+            size: Number,
+        }, { _id: false }),
+        default: null,
+    },
     status: { type: String, required: true },
     createdAt: { type: String, required: true },
     createdBy: { type: String, required: true },

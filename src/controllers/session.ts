@@ -335,3 +335,81 @@ export const getLatestSessionByClient = async (
     });
   }
 };
+
+export const getSessionDataForHome = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  const userId = req.user_Id;
+  const { organizationId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(403).json({
+        Status: "failure",
+        Error: {
+          message: "User does not exist.",
+          name: "ValidationError",
+        },
+      });
+    }
+
+    // Base query depending on user role
+    let query: any = { organizationId };
+    if (user.role === "therapist") {
+      query.therapistId = userId;
+    }
+
+    // Get current date at midnight (start of day) in ISO format
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const todayISOString = today.toISOString();
+    const tomorrowISOString = tomorrow.toISOString();
+    const currentTimeISOString = new Date().toISOString();
+
+    // Find completed sessions
+    const completedSessions = await Session.countDocuments({
+      ...query,
+      status: "completed",
+    });
+
+    // Find upcoming sessions (sessions with datetime greater than current time)
+    const upcomingSessions = await Session.countDocuments({
+      ...query,
+      sessionDateTime: { $gt: currentTimeISOString },
+      status: { $ne: "completed" },
+    });
+
+    // Find today's sessions count
+    const todaysSessions = await Session.countDocuments({
+      ...query,
+      sessionDateTime: {
+        $gte: todayISOString,
+        $lt: tomorrowISOString,
+      },
+    });
+
+    return res.status(200).json({
+      Status: "success",
+      Data: {
+        totalSessionsCompleted: completedSessions,
+        totalUpcomingSessions: upcomingSessions,
+        totalTodaysSessions: todaysSessions,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching session data for home:", error);
+    return res.status(500).json({
+      Status: "failure",
+      Error: {
+        message: "Internal Server Error",
+        name: "ServerError",
+      },
+    });
+  }
+};

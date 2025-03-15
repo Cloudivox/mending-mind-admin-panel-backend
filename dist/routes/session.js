@@ -28,4 +28,7 @@ router.get("/:sessionId", auth_1.default, (req, res) => __awaiter(void 0, void 0
 router.get("/client-session/:clientId", auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, session_1.getLatestSessionByClient)(req, res);
 }));
+router.get("/home-page-data/:organizationId", auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield (0, session_1.getSessionDataForHome)(req, res);
+}));
 exports.default = router;

@@ -177,7 +177,7 @@ const updateOrganization = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 },
             });
         }
-        const updatedFields = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (name && { name })), (location && { location })), (code && { code })), (country && { country })), (description && { description })), (logo && { logo })), (therapists && { therapists })), { updatedAt: new Date().toISOString(), updatedBy: userId });
+        const updatedFields = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (name && { name })), (location && { location })), (code && { code })), (country && { country })), (description && { description })), (logo ? { logo } : { logo: null })), (therapists && { therapists })), { updatedAt: new Date().toISOString(), updatedBy: userId });
         const updatedOrganization = yield Organization_1.default.findByIdAndUpdate(id, { $set: updatedFields }, { new: true });
         return res
             .status(200)

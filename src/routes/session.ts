@@ -5,6 +5,7 @@ import {
   getAllSessions,
   getLatestSessionByClient,
   getSessionById,
+  getSessionDataForHome,
 } from "../controllers/session";
 
 const router = express.Router();
@@ -34,6 +35,14 @@ router.get(
   auth,
   async (req: Request, res: Response) => {
     await getLatestSessionByClient(req, res);
+  }
+);
+
+router.get(
+  "/home-page-data/:organizationId",
+  auth,
+  async (req: Request, res: Response) => {
+    await getSessionDataForHome(req, res);
   }
 );
 
