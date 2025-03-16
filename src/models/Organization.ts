@@ -31,15 +31,7 @@ const OrganizationSchema = new Schema(
     country: { type: String, required: true },
     description: { type: String },
     logo: {
-      type: new Schema(
-        {
-          base64: String,
-          name: String,
-          type: String,
-          size: Number,
-        },
-        { _id: false }
-      ),
+      type: Schema.Types.Mixed, // Allow any type of value
       default: null,
     },
     status: { type: String, required: true },

@@ -41,12 +41,7 @@ const OrganizationSchema = new mongoose_1.Schema({
     country: { type: String, required: true },
     description: { type: String },
     logo: {
-        type: new mongoose_1.Schema({
-            base64: String,
-            name: String,
-            type: String,
-            size: Number,
-        }, { _id: false }),
+        type: mongoose_1.Schema.Types.Mixed, // Allow any type of value
         default: null,
     },
     status: { type: String, required: true },

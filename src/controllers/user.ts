@@ -131,6 +131,9 @@ export const createUser = async (req: Request, res: Response) => {
       ...(role === "client" && { organization: organizationId }),
     }) as InstanceType<typeof User>;
 
+    // Save the new user first
+    await newUser.save();
+
     if (role === "therapist") {
       if (MENDING_MIND_ID !== organizationId) {
         const mendingMindOrg = await Organization.findById(MENDING_MIND_ID);
@@ -148,6 +151,7 @@ export const createUser = async (req: Request, res: Response) => {
       Data: { user: newUser },
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       Status: "failure",
       Error: {

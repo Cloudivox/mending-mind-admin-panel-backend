@@ -110,6 +110,8 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         const newUser = new User_1.default(Object.assign({ email,
             role, status: "pending", name, phone: phone ? phone : null }, (role === "client" && { organization: organizationId })));
+        // Save the new user first
+        yield newUser.save();
         if (role === "therapist") {
             if (exports.MENDING_MIND_ID !== organizationId) {
                 const mendingMindOrg = yield Organization_1.default.findById(exports.MENDING_MIND_ID);
@@ -127,6 +129,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({
             Status: "failure",
             Error: {
