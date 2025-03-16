@@ -283,6 +283,11 @@ const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     organizationId: new mongoose_1.default.Types.ObjectId(organizationId), // Ensure organizationId is treated correctly
                 });
             }
+            if (roles.includes("admin")) {
+                roleFilters.push({
+                    role: "admin",
+                });
+            }
             if (roleFilters.length > 0) {
                 queries.push({ $or: roleFilters });
             }
