@@ -329,6 +329,12 @@ export const getAllUsers = async (req: Request, res: Response) => {
         });
       }
 
+      if (roles.includes("admin")) {
+        roleFilters.push({
+          role: "admin",
+        });
+      }
+
       if (roleFilters.length > 0) {
         queries.push({ $or: roleFilters });
       }
